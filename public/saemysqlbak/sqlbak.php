@@ -67,7 +67,7 @@ if( isset($_GET["sqlbak"]) && $_GET["sqlbak"] === $sqlbak_key){
 	 //添加任务
 	 $nowtime = date("YmdHms");
 	 $sqlname = $nowtime.SAE_MYSQL_DB."bak.sql.zip";
-	 $callbackurl = $bakphp_dir."sqlbak.php?sqlbakcallback=".$nowtime;
+	 $callbackurl = $bakphp_dir."sqlbak.php?sqlbakcallback=".$nowtime.SAE_MYSQL_DB;
 	 $taskID=$dj->addTask("export","mysql",$bak_Storagename,$sqlname,SAE_MYSQL_DB,NULL,$callbackurl);
 	 if($taskID===false){
 		 var_dump($dj->errno(), $dj->errmsg());
