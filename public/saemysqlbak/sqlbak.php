@@ -43,7 +43,8 @@ $dj = new SaeDeferredJob();
 /* 连主库 */
 $link=mysql_connect(SAE_MYSQL_HOST_M.':'.SAE_MYSQL_PORT,SAE_MYSQL_USER,SAE_MYSQL_PASS);
 
-if(isset($_GET["install"])){ //执行新建表 
+if(isset($_GET["install"])){ //执行新建表
+	echo "<!doctype html><html><head><meta charset=\"utf-8\"><title>数据库初始</title></head><body>";
 	//$sql = "CREATE TABLE `".$mysql_table_name."` ( `id` int(8) NOT NULL COMMENT '任务id', `sqlname` varchar(50) DEFAULT NULL COMMENT '备份文件名',	`dbname` varchar(50) DEFAULT NULL COMMENT '数据库名', `addtime` datetime DEFAULT NULL COMMENT '任务添加时间', `stat` int(1) DEFAULT NULL COMMENT '状态码:3备份成功\-2为已删除 其它参考SaeDeferredJob API使用介绍', `overtime` datetime DEFAULT NULL COMMENT '完成时间' ) ENGINE=MyISAM DEFAULT CHARSET=utf8";
 	$sql = "CREATE TABLE `" . $mysql_table_name . "` ( `id` int(8) NOT NULL COMMENT '任务id', `sqlname` varchar(50) DEFAULT NULL COMMENT '备份文件名', `dbname` varchar(50) DEFAULT NULL COMMENT '数据库名', `addtime` datetime DEFAULT NULL COMMENT '任务添加时间', `stat` int(1) DEFAULT NULL COMMENT '状态码:3备份成功;-2为已删除; 其它参考SaeDeferredJob API使用介绍', `overtime` datetime DEFAULT NULL COMMENT '完成时间' ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 	if(mysql_num_rows(mysql_query("SHOW TABLES LIKE '".$mysql_table_name."'")==1)){
@@ -52,10 +53,12 @@ if(isset($_GET["install"])){ //执行新建表
 		if($link && $rql = mysql_query($sql,$link)){
 			echo "数据表新建成功";	 
 		}else{
-			echo $sql;
-			echo "数据表新建失败,请刷新重试";	
+			//echo $sql;
+			echo "数据表新建失败,请刷新重试;<br/>手动创建数据表:数据库phpmyadmin自己创建此表";
+			echo "sql:<textarea style=\"width:800px; height:300px;\">".$sql."</textarea>";
 		}
 	}
+	echo "</body></html>";
 }
 
 if( isset($_GET["sqlbak"]) && $_GET["sqlbak"] === $sqlbak_key){
@@ -139,20 +142,26 @@ if( isset($_GET["sqlbakcallback"])){
 			if($rqlold = mysql_query($sql,$link)){
 				$s = new SaeStorage();
 				while($rowold=mysql_fetch_array($rqlold,MYSQL_ASSOC)){
-					$dellstat = $s->delete($bak_Storagename,$rowold["sqlname"]);
-					if($dellstat){
-						$sql = "UPDATE `".$mysql_table_name."` SET  `stat` = '-2' , `overtime` = NOW() WHERE `id` ='".$rowold["id"]."' AND  `dbname` = '" . $dbname . "'";
-						if(mysql_query($sql,$link)){
-							echo "删除".$rowold["overtime"]."成功";
-							echo "<br>";
+					if($rowold["addtime"] != ''){
+						$datetime = getdate(strtotime($rowold["addtime"]));
+ 						$mday = $datetime["mday"];
+					}
+					if(!isset($mday) || $mday != 28){ //保留每月28号备份;
+						$dellstat = $s->delete($bak_Storagename,$rowold["sqlname"]);
+						if($dellstat){
+							$sql = "UPDATE `".$mysql_table_name."` SET  `stat` = '-2' , `overtime` = NOW() WHERE `id` ='".$rowold["id"]."' AND  `dbname` = '" . $dbname . "'";
+							if(mysql_query($sql,$link)){
+								echo "删除".$rowold["overtime"]."成功";
+								echo "<br>";
+							}else{
+								echo "删除".$rowold["overtime"]."成功";
+								echo "入库失败";
+							}
 						}else{
-							echo "删除".$rowold["overtime"]."成功";
-							echo "入库失败";
+							echo "删除".$rowold["overtime"]."失败";
+							echo "<br>";
 						}
-					}else{
-						echo "删除".$rowold["overtime"]."失败";
-						echo "<br>";
-					}	
+					}
 				}
 			}
 			
