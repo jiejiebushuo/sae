@@ -4,9 +4,10 @@ $bakphp_dir = "mysqlbak/";  //你把备份的php 放在哪个目录了 根目录
 $bak_Storagename = "mysqlbakStoragename";  //备份下来的数据库放在哪个Storag 中,一定要是一个公开是的Storag
 $sqlbak_key = "okklkjaksjdk"; // 这可以一段随意的字符串,只有知道此字符串才能执行添加备份任务 (字母加数字组合)
 $dbname = SAE_MYSQL_DB;
+$Storage_private = true; //配置storage 是否为私有; 默认配置为私有 ,false 为公开.
 
 /*
-注意:自动删除七天前备份,可以在下面配置更长. 定时任务方式大概会在第二天的1点左右开始备份
+注意:自动删除七天前备份,可以在下面配置更长. 定时任务方式大概会在第二天的1点左右开始备份,每月28号备份不删除;
 
 此脚本运行演示:
 1.创建表 执行  http://my.sinaapp.com/mysqlbak/sqlbak.php?install=1
@@ -62,6 +63,11 @@ if(isset($_GET["install"])){ //执行新建表
 }
 
 if( isset($_GET["sqlbak"]) && $_GET["sqlbak"] === $sqlbak_key){
+	 //修改
+	 $Storage = new SaeStorage();
+	 $StorageAttr = array('private'=>false); //设置存储空间为公有
+	 $Storage->setDomainAttr($bak_Storagename, $StorageAttr);
+	 
 	 //添加任务
 	 $nowtime = date("YmdHms");
 	 $sqlname = $nowtime.$dbname."bak.sql.zip";
@@ -96,7 +102,8 @@ if( isset($_GET["sqlbak"]) && $_GET["sqlbak"] === $sqlbak_key){
 			}
 		}
 	 }
-	 
+	 $StorageAttr = array('private'=>$Storage_private); //设置存储空间为私有
+	 $Storage->setDomainAttr($bak_Storagename, $StorageAttr); 
 }
 if( isset($_GET["sqlbakcallback"])){
 	//查看状态
