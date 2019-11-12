@@ -20,7 +20,7 @@ final class CFileCache
 	 * 缓存目录
 	 * @var string
 	 */
-	private static $msCachePath  = '/data/www/nmdx/1/vip/openapi/1.0/cache/';
+	private static $msCachePath  = './cache/';
 	/**
 	 * 默认缓存失效时间(1000小时)
 	 * @var int
@@ -33,7 +33,7 @@ final class CFileCache
 	 * self::$msCachePath 缓存目录为共享目录
 	 * @param string $sCachePath
 	 */
-	function __construct($sCachePath='/data/www/nmdx/1/vip/openapi/1.0/cache/')
+	function __construct($sCachePath='./cache/')
 	{
 		if (is_null(self::$msCachePath))
 			self::$msCachePath = $sCachePath;
